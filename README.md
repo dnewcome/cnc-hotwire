@@ -39,6 +39,10 @@ with a lead-in slit down to each part (a hot wire has no pen-up).*
 |---|---|
 | ![nest parts](media/nest_parts.png) | ![nest cut](media/nest_cut.gif) |
 
+| Interactive MuJoCo bench (`make mujoco`) | 4-axis sweep (headless demo) |
+|---|---|
+| ![mujoco](media/mujoco.png) | ![mujoco sweep](media/mujoco.gif) |
+
 ## Layout
 
 ```
@@ -59,10 +63,15 @@ sim/
 
 ## Run
 
+Everything is driven by the Makefile (`make help` lists all targets):
+
 ```bash
-python3 cad/machine.py          # assemble + render cad/build/cnc_hotwire_iso.png
-MACHINE=cnc_hotwire NOTE=note bash cad/snap.sh   # snapshot into the dated log
-python3 sim/cut_sim.py          # ruled solids + sim/out/cut_sweep.gif
+make                 # run the cut + nest simulations
+make mujoco          # INTERACTIVE MuJoCo viewer — drive the 4 axes, the wire follows
+make mujoco-demo     # headless sweep -> sim/out/mujoco_sweep.gif
+make machine         # assemble + render -> cad/build/cnc_hotwire_iso.png
+make all             # machine render + both sims
+make snap NOTE=...   # log the current render into the dated history
 ```
 
 ## Governing constraint: a hot wire has no "pen-up"
@@ -92,6 +101,7 @@ them off — far more efficient than cutting thin sheets. See `sim/nest_sim.py`
 - [x] Parametric two-tower 4-axis CAD model (stand-in primitives at concept stage)
 - [x] Kinematic cut simulation — ruled solids + swept-wire animation
 - [x] Nesting simulation — continuous-path cut plan + tray of prismatic parts
+- [x] Interactive MuJoCo sim — 4 driven axes + wire tendon (`make mujoco`)
 - [ ] **Wire subsystem (now the #1 driver)** — tension (spring/constant-force) + temp
       control (PWM/constant-current). Sets **kerf** consistency, which sets nesting tightness.
 - [ ] Repeatable profiling accuracy — backlash, squareness, wire alignment/sag

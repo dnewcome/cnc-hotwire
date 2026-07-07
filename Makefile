@@ -6,7 +6,7 @@ SIM    := sim
 NOTE   ?= update
 
 .DEFAULT_GOAL := sim
-.PHONY: all sim machine cut nest snap clean help
+.PHONY: all sim machine cut nest mujoco mujoco-demo mujoco-selftest snap clean help
 
 ## sim:     run both simulations (cut + nest)            [default]
 sim: cut nest
@@ -25,6 +25,18 @@ cut:
 ## nest:    nesting cut sim -> sim/out/{nest_plan,nest_parts}.png, nest_cut.gif
 nest:
 	$(PYTHON) $(SIM)/nest_sim.py
+
+## mujoco:  INTERACTIVE MuJoCo viewer — drag sliders to drive the 4 axes, wire follows
+mujoco:
+	$(PYTHON) $(SIM)/mujoco_sim.py
+
+## mujoco-demo: headless scripted sweep -> sim/out/mujoco_sweep.gif (no window)
+mujoco-demo:
+	$(PYTHON) $(SIM)/mujoco_sim.py --demo
+
+## mujoco-selftest: build + step, print sanity, no window (CI-safe)
+mujoco-selftest:
+	$(PYTHON) $(SIM)/mujoco_sim.py --selftest
 
 ## snap:    log current machine render into the dated history (NOTE=... optional)
 snap:
