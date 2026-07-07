@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+
+# Generated CAD / sim outputs — regenerate with `make`
+cad/build/
+sim/out/
+*.stl
+*.scad
+
+# OS
+.DS_Store
