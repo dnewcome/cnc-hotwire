@@ -48,22 +48,33 @@ with a lead-in slit down to each part (a hot wire has no pen-up).*
 *Wire subsystem sizing (`make wire`) — temperature vs current (gauge sweep), mid-span sag
 vs tension, and why tensioning must be constant-force.*
 
+| Wire tensioner mechanism (`make tensioner`) | How it works (cross-section) |
+|---|---|
+| ![tensioner](media/tensioner.png) | ![tensioner diagram](media/tensioner_diagram.png) |
+
 ## Layout
 
 ```
 cad/
-  machine_params.py   SINGLE SOURCE OF TRUTH — every shared dimension + place() helper
-  frame.py            static structure: base + two vertical gantry frames
-  stage.py            one side's moving assembly (gantry beam + Y carriage + wire mount)
-  wire.py             the wire — a derived cylinder between the two carriage mounts
-  foam.py             bed + foam work block
-  machine.py          assemble at a 4-axis pose -> per-part STLs + iso render
-  snap.sh             log a render into renders/<machine>/ (dated history)
-  build/              STLs + current cnc_hotwire_iso.png
+  machine_params.py     SINGLE SOURCE OF TRUTH — every shared dimension + place() helper
+  frame.py              static structure: base + two vertical gantry frames
+  stage.py              one side's moving assembly (gantry beam + Y carriage + wire mount)
+  wire.py               the wire — a derived cylinder between the two carriage mounts
+  foam.py               bed + foam work block
+  machine.py            assemble at a 4-axis pose -> per-part STLs + iso render
+  partlib.py            small shared through-hole helpers
+  tensioner_bracket.py  printed channel that bolts to the carriage (build123d-part)
+  tensioner_sled.py     printed sliding wire carrier (clamp + terminal + spring hook)
+  tensioner.py          tensioner subassembly -> iso + section + labeled diagram
+  snap.sh               log a render into renders/<machine>/ (dated history)
+  build/                STLs + renders (git-ignored)
   renders/cnc_hotwire/  dated PNG history + INDEX.md
 sim/
-  cut_sim.py          kinematic cut: ruled solids (extrusion vs taper) + swept-wire GIF
-  out/                extrusion.png, taper.png, cut_sweep.gif
+  cut_sim.py            kinematic cut: ruled solids (extrusion vs taper) + swept-wire GIF
+  nest_sim.py           nesting: continuous-path cut plan + tray of parts + animation
+  wire_analysis.py      thermo-mechanical wire sizing (thermal / sag / expansion)
+  mujoco_sim.py         interactive MuJoCo bench (make mujoco) + headless demo / selftest
+  out/                  generated pngs / gifs (git-ignored)
 ```
 
 ## Run
@@ -72,6 +83,8 @@ Everything is driven by the Makefile (`make help` lists all targets):
 
 ```bash
 make                 # run the cut + nest simulations
+make wire            # thermo-mechanical wire sizing -> sim/out/wire_analysis.png
+make tensioner       # verify printed parts (watertight) + render tensioner assembly
 make mujoco          # INTERACTIVE MuJoCo viewer — drive the 4 axes, the wire follows
 make mujoco-demo     # headless sweep -> sim/out/mujoco_sweep.gif
 make machine         # assemble + render -> cad/build/cnc_hotwire_iso.png
@@ -115,6 +128,19 @@ Nichrome 80, **0.4 mm**, 700 mm heated span (`sim/wire_analysis.py`; chosen valu
   tensioner with >3 mm take-up holds tension flat. This is the key design conclusion.
 - **Kerf ~0.7 mm** → nest pitch = part + 0.7 mm.
 
+## Wire tensioner (mechanism — `make tensioner`)
+
+A printable **sled-in-channel** constant-force tensioner (`cad/tensioner_*.py`):
+
+- **Bracket** — open-top channel bolts to the carriage; guides the sled, anchors the spring,
+  passes the wire through the front wall. **Sled** — slides on the wire axis with an M3
+  set-screw wire clamp, an electrical terminal boss, and a spring hook.
+- An **extension spring** pulls the sled back with ~5 N; the **15 mm stroke** absorbs the
+  2.2 mm hot growth (plus setup slack) so tension stays flat — the constant-force behaviour the
+  sizing analysis proved mandatory.
+- Force is along the wire axis, so gravity + the channel capture the sled — no printed overhangs.
+- Both printed parts pass the watertight / single-body slicer gate.
+
 ## Status & next steps
 
 - [x] Parametric two-tower 4-axis CAD model (stand-in primitives at concept stage)
@@ -123,7 +149,8 @@ Nichrome 80, **0.4 mm**, 700 mm heated span (`sim/wire_analysis.py`; chosen valu
 - [x] Interactive MuJoCo sim — 4 driven axes + wire tendon (`make mujoco`)
 - [x] **Wire subsystem sizing** — thermo-mechanical analysis (`make wire`): gauge, PSU,
       tension, elongation, kerf. Key result: constant-force tensioning is mandatory.
-- [ ] Wire tensioner **mechanism** — constant-force spring + wire clamp + electrical mount
+- [x] **Wire tensioner mechanism** — printable sled-in-channel (`make tensioner`), watertight
+- [ ] Mount the tensioner on the carriage — integrate into the machine assembly
 - [ ] MuJoCo **sag validation** — chain/cable under gravity + tension vs the catenary formula
 - [ ] Repeatable profiling accuracy — backlash, squareness, wire alignment/lag
 - [ ] CAM — continuous-path nest routing + automatic lead-in/slit generation

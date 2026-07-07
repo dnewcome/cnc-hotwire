@@ -48,6 +48,30 @@ WIRE_TENSIONER_TRAVEL = 5.0       # constant-force take-up (mm) > 2.2 mm hot elo
 WIRE_KERF = 0.7                   # indicative kerf (mm) -> nest pitch = part + WIRE_KERF
 WIRE_PSU_V = 24.0                 # supply (V); PWM/constant-current, ~1.6 A / 16 W at temp
 
+# ---- wire tensioner (constant-force sled; see cad/tensioner*.py) ---------
+TENS_STROKE   = 15.0     # sled take-up travel (mm) > 2.2 mm hot elongation + setup
+TENS_WALL     = 3.0      # channel side-wall thickness
+TENS_FLOOR    = 3.0      # channel floor thickness
+TENS_BACK     = 6.0      # back wall (carriage mount + spring anchor) thickness
+TENS_FRONT    = 4.0      # front wall (wire exit) thickness
+TENS_SLED_X   = 16.0     # sled length along the slide axis
+TENS_SLED_Y   = 30.0     # sled width
+TENS_SLED_Z   = 18.0     # sled height
+TENS_SLIDE_CL = 0.4      # sled / channel slide clearance
+TENS_MOUNT_DY = 22.0     # carriage bolt spacing (M3)
+TENS_M3_CL    = 3.4      # M3 clearance
+TENS_SET_TAP  = 2.6      # M3 self-tap into plastic (wire-clamp set screw)
+TENS_HEATSET  = 4.6      # M3 heat-set / terminal bore (through, not blind)
+TENS_WIRE_CH  = 2.0      # wire channel diameter through the sled
+TENS_SPRING_OD = 6.0     # extension-spring OD (stand-in)
+# derived
+TENS_CAV_X = TENS_SLED_X + TENS_STROKE          # channel cavity length
+TENS_CAV_Y = TENS_SLED_Y + TENS_SLIDE_CL        # channel cavity width
+TENS_X = TENS_BACK + TENS_CAV_X + TENS_FRONT    # bracket overall length
+TENS_Y = TENS_CAV_Y + 2 * TENS_WALL             # bracket overall width
+TENS_H = TENS_FLOOR + TENS_SLED_Z               # channel wall height
+TENS_WIRE_ZC = TENS_FLOOR + TENS_SLED_Z / 2     # wire centreline height above base
+
 # ---- bed + foam ---------------------------------------------------------
 BED_TOP = 40.0
 BED_THK = 20.0
