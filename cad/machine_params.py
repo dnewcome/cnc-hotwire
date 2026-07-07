@@ -35,9 +35,18 @@ BEAM_LEN = BED_LEN                        # gantry beam spans the bed in Y
 CARR_X, CARR_Y, CARR_Z = 60.0, 60.0, 70.0  # Y-carriage block
 MOUNT_W = 16.0                            # wire-mount arm cross-section
 
-# ---- wire ---------------------------------------------------------------
-WIRE_DIA = 0.8                    # real nichrome wire diameter
+# ---- wire subsystem (sized in sim/wire_analysis.py) ---------------------
+WIRE_MATERIAL = "Nichrome 80"     # NiCr 80/20
+WIRE_DIA = 0.4                    # chosen diameter (mm) — kerf vs strength balance
 WIRE_VIS_DIA = 4.5                # thicker in renders so it is visible
+WIRE_OVERHANG = 50.0              # each end: tower face -> mount/tensioner (mm)
+WIRE_SPAN = CUT_WIDTH + 2 * WIRE_OVERHANG   # heated length (mm)
+WIRE_T_CUT = 250.0                # target cutting temperature (deg C) — clean EPS/XPS
+WIRE_SAG_TOL = 0.15               # allowable mid-span bow (mm)
+WIRE_TENSION = 5.0                # design tension (N): > 4.2 N min, ~x5 stress margin
+WIRE_TENSIONER_TRAVEL = 5.0       # constant-force take-up (mm) > 2.2 mm hot elongation
+WIRE_KERF = 0.7                   # indicative kerf (mm) -> nest pitch = part + WIRE_KERF
+WIRE_PSU_V = 24.0                 # supply (V); PWM/constant-current, ~1.6 A / 16 W at temp
 
 # ---- bed + foam ---------------------------------------------------------
 BED_TOP = 40.0

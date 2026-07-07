@@ -6,7 +6,7 @@ SIM    := sim
 NOTE   ?= update
 
 .DEFAULT_GOAL := sim
-.PHONY: all sim machine cut nest mujoco mujoco-demo mujoco-selftest snap clean help
+.PHONY: all sim machine cut nest wire mujoco mujoco-demo mujoco-selftest snap clean help
 
 ## sim:     run both simulations (cut + nest)            [default]
 sim: cut nest
@@ -25,6 +25,10 @@ cut:
 ## nest:    nesting cut sim -> sim/out/{nest_plan,nest_parts}.png, nest_cut.gif
 nest:
 	$(PYTHON) $(SIM)/nest_sim.py
+
+## wire:    thermo-mechanical wire sizing -> sim/out/wire_analysis.png + sizing table
+wire:
+	$(PYTHON) $(SIM)/wire_analysis.py
 
 ## mujoco:  INTERACTIVE MuJoCo viewer — drag sliders to drive the 4 axes, wire follows
 mujoco:

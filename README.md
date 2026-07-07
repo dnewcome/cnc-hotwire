@@ -43,6 +43,11 @@ with a lead-in slit down to each part (a hot wire has no pen-up).*
 |---|---|
 | ![mujoco](media/mujoco.png) | ![mujoco sweep](media/mujoco.gif) |
 
+![wire sizing](media/wire_analysis.png)
+
+*Wire subsystem sizing (`make wire`) — temperature vs current (gauge sweep), mid-span sag
+vs tension, and why tensioning must be constant-force.*
+
 ## Layout
 
 ```
@@ -96,15 +101,30 @@ taper**, so the second pair of axes directly serves the forming goal.
 them off — far more efficient than cutting thin sheets. See `sim/nest_sim.py`
 (`nest_plan.png`, `nest_parts.png`, `nest_cut.gif`).
 
+## Wire subsystem (sized — `make wire`)
+
+Nichrome 80, **0.4 mm**, 700 mm heated span (`sim/wire_analysis.py`; chosen values in
+`machine_params.py`):
+
+- **Thermal:** ~**1.6 A / 10 V / 16 W** holds 250 °C (clean EPS/XPS); loss is convection-
+  dominated. A 24 V supply with PWM / constant-current control has ample headroom.
+- **Tension:** **5 N** (~0.5 kgf) keeps mid-span sag under 0.15 mm at only ~34 MPa wire
+  stress (×6 margin) — sag, not strength, is the binding constraint.
+- **Constant-force tensioning is mandatory:** the wire grows **2.2 mm** when hot; with
+  fixed ends that erases the pre-tension and it goes slack (→ large sag). A constant-force
+  tensioner with >3 mm take-up holds tension flat. This is the key design conclusion.
+- **Kerf ~0.7 mm** → nest pitch = part + 0.7 mm.
+
 ## Status & next steps
 
 - [x] Parametric two-tower 4-axis CAD model (stand-in primitives at concept stage)
 - [x] Kinematic cut simulation — ruled solids + swept-wire animation
 - [x] Nesting simulation — continuous-path cut plan + tray of prismatic parts
 - [x] Interactive MuJoCo sim — 4 driven axes + wire tendon (`make mujoco`)
-- [ ] **Wire subsystem (now the #1 driver)** — tension (spring/constant-force) + temp
-      control (PWM/constant-current). Sets **kerf** consistency, which sets nesting tightness.
-- [ ] Repeatable profiling accuracy — backlash, squareness, wire alignment/sag
+- [x] **Wire subsystem sizing** — thermo-mechanical analysis (`make wire`): gauge, PSU,
+      tension, elongation, kerf. Key result: constant-force tensioning is mandatory.
+- [ ] Wire tensioner **mechanism** — constant-force spring + wire clamp + electrical mount
+- [ ] MuJoCo **sag validation** — chain/cable under gravity + tension vs the catenary formula
+- [ ] Repeatable profiling accuracy — backlash, squareness, wire alignment/lag
 - [ ] CAM — continuous-path nest routing + automatic lead-in/slit generation
-- [ ] MuJoCo dynamics — belt/mass/accel, wire thermal sag (needs motor/mass specs)
-- [ ] Real parts — carriages, wire mounts, motor/idler mounts (per build123d-part rules)
+- [ ] Real parts — carriages, motor/idler mounts (per build123d-part rules)
