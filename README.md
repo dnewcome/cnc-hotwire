@@ -52,6 +52,11 @@ vs tension, and why tensioning must be constant-force.*
 |---|---|
 | ![tensioner](media/tensioner.png) | ![tensioner diagram](media/tensioner_diagram.png) |
 
+![heater driver](media/heater_driver.png)
+
+*Heater driver sizing (`make driver`) — heat-up, constant-power supply-sag rejection, the
+40 m°C PWM ripple (→ stable kerf), and the duty→temperature map.*
+
 ## Layout
 
 ```
@@ -73,6 +78,7 @@ sim/
   cut_sim.py            kinematic cut: ruled solids (extrusion vs taper) + swept-wire GIF
   nest_sim.py           nesting: continuous-path cut plan + tray of parts + animation
   wire_analysis.py      thermo-mechanical wire sizing (thermal / sag / expansion)
+  heater_driver.py      heater-driver electro-thermal sim + component selection
   mujoco_sim.py         interactive MuJoCo bench (make mujoco) + headless demo / selftest
   out/                  generated pngs / gifs (git-ignored)
 ```
@@ -84,6 +90,7 @@ Everything is driven by the Makefile (`make help` lists all targets):
 ```bash
 make                 # run the cut + nest simulations
 make wire            # thermo-mechanical wire sizing -> sim/out/wire_analysis.png
+make driver          # heater-driver electro-thermal sim -> sim/out/heater_driver.png
 make tensioner       # verify printed parts (watertight) + render tensioner assembly
 make mujoco          # INTERACTIVE MuJoCo viewer — drive the 4 axes, the wire follows
 make mujoco-demo     # headless sweep -> sim/out/mujoco_sweep.gif
@@ -135,11 +142,28 @@ A printable **sled-in-channel** constant-force tensioner (`cad/tensioner_*.py`):
 - **Bracket** — open-top channel bolts to the carriage; guides the sled, anchors the spring,
   passes the wire through the front wall. **Sled** — slides on the wire axis with an M3
   set-screw wire clamp, an electrical terminal boss, and a spring hook.
-- An **extension spring** pulls the sled back with ~5 N; the **15 mm stroke** absorbs the
-  2.2 mm hot growth (plus setup slack) so tension stays flat — the constant-force behaviour the
-  sizing analysis proved mandatory.
+- A **soft stainless extension spring** (~8 mm OD, ~25 mm free, ~0.3 N/mm), anchored to a post
+  on the carriage ~30 mm behind the bracket so it stays near-constant over the travel, pulls the
+  sled with **~6 N**; the **15 mm stroke** absorbs the 2.2 mm hot growth. (A true constant-force
+  spring is the tighter-tolerance upgrade.) This is the constant-force behaviour the analysis
+  proved mandatory.
 - Force is along the wire axis, so gravity + the channel capture the sled — no printed overhangs.
 - Both printed parts pass the watertight / single-body slicer gate.
+
+## Heater driver (sized — `make driver`)
+
+Low-side logic-level **N-MOSFET PWM** from a 24 V supply with a **current-sense shunt for
+closed-loop constant-power** (`sim/heater_driver.py`):
+
+- The load is a pure resistor, so **no flyback diode** — the single biggest simplification vs a
+  motor driver.
+- **Constant-power** (≈ constant-current, since nichrome's R barely drifts) holds temperature —
+  hence kerf — against supply sag and resistance drift; open-loop fixed duty wanders.
+- **~15 W / 17 % duty** at the 250 °C operating point; **PWM ripple is 40 m°C** at 1 kHz because
+  the wire's thermal mass (τ ≈ 4 s) filters it → stable kerf.
+- MOSFET dissipates **~30 mW** (resistive load, low duty) → any logic-level FET runs cold.
+- Parts: 24 V/≥4 A supply, logic-level N-MOSFET (IRLZ44N/IRLB8721), 0.05 Ω shunt + INA180, MCU
+  PWM, ~5 A fuse + TVS + open-wire detect. Standalone alt: a CC buck module set to I_set.
 
 ## Status & next steps
 
@@ -150,7 +174,10 @@ A printable **sled-in-channel** constant-force tensioner (`cad/tensioner_*.py`):
 - [x] **Wire subsystem sizing** — thermo-mechanical analysis (`make wire`): gauge, PSU,
       tension, elongation, kerf. Key result: constant-force tensioning is mandatory.
 - [x] **Wire tensioner mechanism** — printable sled-in-channel (`make tensioner`), watertight
+- [x] **Real spring spec'd** — soft extension spring (~6 N) on a carriage anchor post
+- [x] **Heater driver sized** — low-side PWM + constant-power (`make driver`), no flyback diode
 - [ ] Mount the tensioner on the carriage — integrate into the machine assembly
+- [ ] Driver hardware — schematic/PCB (or a CC buck module) wired to the controller
 - [ ] MuJoCo **sag validation** — chain/cable under gravity + tension vs the catenary formula
 - [ ] Repeatable profiling accuracy — backlash, squareness, wire alignment/lag
 - [ ] CAM — continuous-path nest routing + automatic lead-in/slit generation

@@ -6,7 +6,7 @@ SIM    := sim
 NOTE   ?= update
 
 .DEFAULT_GOAL := sim
-.PHONY: all sim machine cut nest wire tensioner mujoco mujoco-demo mujoco-selftest snap clean help
+.PHONY: all sim machine cut nest wire driver tensioner mujoco mujoco-demo mujoco-selftest snap clean help
 
 ## sim:     run both simulations (cut + nest)            [default]
 sim: cut nest
@@ -29,6 +29,10 @@ nest:
 ## wire:    thermo-mechanical wire sizing -> sim/out/wire_analysis.png + sizing table
 wire:
 	$(PYTHON) $(SIM)/wire_analysis.py
+
+## driver:  heater-driver electro-thermal sim -> sim/out/heater_driver.png + component table
+driver:
+	$(PYTHON) $(SIM)/heater_driver.py
 
 ## tensioner: verify printed parts (watertight) + render tensioner assembly/diagram
 tensioner:

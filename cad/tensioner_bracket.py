@@ -21,7 +21,7 @@ def part():
     for s in (1, -1):                                   # carriage mount (through back wall)
         holes.append(xhole(M.TENS_M3_CL / 2, -1, M.TENS_BACK + 1,
                            s * M.TENS_MOUNT_DY / 2, M.TENS_WIRE_ZC))
-    holes.append(xhole(3.2 / 2, -1, M.TENS_BACK + 1, 0, M.TENS_WIRE_ZC))   # spring anchor
+    holes.append(xhole(M.TENS_SPRING_ANCHOR_D / 2, -1, M.TENS_BACK + 1, 0, M.TENS_WIRE_ZC))  # spring pass-through
     holes.append(xhole(M.TENS_WIRE_CH / 2, X - M.TENS_FRONT - 1, X + 1, 0, M.TENS_WIRE_ZC))  # wire exit
     return body.cut(*holes)
 

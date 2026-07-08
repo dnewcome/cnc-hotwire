@@ -63,7 +63,18 @@ TENS_M3_CL    = 3.4      # M3 clearance
 TENS_SET_TAP  = 2.6      # M3 self-tap into plastic (wire-clamp set screw)
 TENS_HEATSET  = 4.6      # M3 heat-set / terminal bore (through, not blind)
 TENS_WIRE_CH  = 2.0      # wire channel diameter through the sled
-TENS_SPRING_OD = 6.0     # extension-spring OD (stand-in)
+# real spring — a soft stainless EXTENSION spring, anchored to a post on the carriage
+# ~30 mm behind the bracket so it is long enough that its rate barely changes the force over
+# the tiny take-up travel. (A constant-force spring is the ideal but a specialty part.)
+# Installed stretched to ~38 mm -> ~6 N nominal; over the 2.2 mm hot take-up it drops to
+# ~5.3 N (<10%), keeping sag < 0.15 mm. Order to: OD/wire/free-length/rate below.
+TENS_SPRING_OD      = 8.0    # extension spring OD (mm)
+TENS_SPRING_WIRE    = 0.7    # spring wire diameter (mm), stainless 302
+TENS_SPRING_FREE    = 25.0   # free length (mm)
+TENS_SPRING_RATE    = 0.30   # spring rate (N/mm)
+TENS_SPRING_IT      = 1.5    # initial tension / preload (N)
+TENS_SPRING_INSTALL = 38.0   # installed (stretched) length (mm) -> ~6 N
+TENS_SPRING_ANCHOR_D = 10.0  # back-wall pass-through for the spring (mm)
 # derived
 TENS_CAV_X = TENS_SLED_X + TENS_STROKE          # channel cavity length
 TENS_CAV_Y = TENS_SLED_Y + TENS_SLIDE_CL        # channel cavity width

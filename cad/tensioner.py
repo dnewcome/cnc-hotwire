@@ -39,6 +39,7 @@ COLORS = {
     "wire":     (1.00, 0.35, 0.06),
     "setscrew": (0.22, 0.22, 0.25),
     "terminal": (0.80, 0.70, 0.25),
+    "anchor":   (0.50, 0.52, 0.56),
 }
 ALPHA = {"sled": 0.45}          # translucent so the spring + take-up gap read through it
 
@@ -49,7 +50,10 @@ def assembly(takeup=0.35):
     z = M.TENS_WIRE_ZC
     sled_solid = Pos(x_start, 0, M.TENS_FLOOR) * sled.part()
 
-    spring = _spring(M.TENS_BACK, x_start, z, M.TENS_SPRING_OD)   # back wall -> sled back
+    hook_x = x_start + sled.HOOK_X                          # sled spring hook
+    anchor_x = hook_x - M.TENS_SPRING_INSTALL              # carriage anchor post (behind bracket)
+    spring = _spring(anchor_x, hook_x, z, M.TENS_SPRING_OD)  # extension spring through the back wall
+    anchor = Pos(anchor_x - 4, 0, z) * Box(8, 16, 16)       # carriage anchor stand-in
 
     wire_out_x = x_start + M.TENS_SLED_X
     wire = wire_mod.wire((wire_out_x, 0, z), (M.TENS_X + 45, 0, z), dia=1.5)
@@ -66,6 +70,7 @@ def assembly(takeup=0.35):
         "bracket": bracket.part(),
         "sled": sled_solid,
         "spring": spring,
+        "anchor": anchor,
         "wire": wire,
         "setscrew": setscrew,
         "terminal": terminal,
@@ -112,17 +117,20 @@ def schematic(name="tensioner_diagram", takeup=0.35):
     z = M.TENS_WIRE_ZC
     x0 = M.TENS_BACK + M.TENS_STROKE * (1 - takeup)      # sled back
     x1 = x0 + M.TENS_SLED_X                              # sled front
+    hook_x = x0 + M.TENS_SLED_X * 0.18                   # sled spring hook
+    anchor_x = hook_x - M.TENS_SPRING_INSTALL            # carriage anchor post
     grey, blue, stl, orn = "#8a8f98", "#3a6ea5", "#b0b3ba", "#ff4d0a"
 
-    fig, ax = plt.subplots(figsize=(10, 4.2), dpi=120)
+    fig, ax = plt.subplots(figsize=(11, 4.2), dpi=120)
     ax.add_patch(Rectangle((0, 0), X, F, fc=grey, ec="k", lw=0.8))                    # floor
     ax.add_patch(Rectangle((0, 0), M.TENS_BACK, H, fc=grey, ec="k", lw=0.8))          # back wall
+    ax.add_patch(Rectangle((anchor_x - 4, 0), 4, H, fc="#6f747c", ec="k", lw=0.8))    # carriage anchor
     ax.add_patch(Rectangle((X - M.TENS_FRONT, 0), M.TENS_FRONT, H, fc=grey, ec="k", lw=0.8))  # front
     ax.add_patch(Rectangle((x0, F), M.TENS_SLED_X, M.TENS_SLED_Z, fc=blue, ec="k",
                            lw=0.8, alpha=0.85))                                        # sled
-    # spring coil (back wall -> sled)
-    xs = np.linspace(M.TENS_BACK, x0, 70)
-    ax.plot(xs, z + 2.4 * np.sin(np.linspace(0, 7 * 2 * np.pi, 70)), color=stl, lw=1.6)
+    # extension spring: carriage anchor -> sled hook (passes through the back wall Ø10)
+    xs = np.linspace(anchor_x, hook_x, 170)
+    ax.plot(xs, z + 2.4 * np.sin(np.linspace(0, 20 * 2 * np.pi, 170)), color=stl, lw=1.3)
     # set screw + terminal on the sled
     ax.add_patch(Rectangle((x0 + M.TENS_SLED_X / 2 - 1.4, F + M.TENS_SLED_Z), 2.8, 5,
                            fc="#333", ec="k", lw=0.6))
@@ -131,9 +139,10 @@ def schematic(name="tensioner_diagram", takeup=0.35):
     # wire through the sled and out the front
     ax.plot([x0, X + 42], [z, z], color=orn, lw=2.6)
     # force arrows
-    ax.annotate("", xy=(M.TENS_BACK - 0.5, z), xytext=(x0, z),
-                arrowprops=dict(arrowstyle="->", color="#5b5f66", lw=2))
-    ax.text((M.TENS_BACK + x0) / 2, F + 3.0, "spring ≈5 N", color="#4a4e55", ha="center", fontsize=9)
+    ax.annotate("", xy=(anchor_x + 3, z), xytext=(x0 - 1, z),
+                arrowprops=dict(arrowstyle="->", color="#5b5f66", lw=1.8))
+    ax.text((anchor_x + x0) / 2, z + 6, "extension spring ≈6 N\n(soft + long → ~flat force)",
+            color="#4a4e55", ha="center", va="bottom", fontsize=8.5)
     ax.annotate("", xy=(X + 30, z + 6), xytext=(x1, z + 6),
                 arrowprops=dict(arrowstyle="->", color=orn, lw=2))
     ax.text((x1 + X + 30) / 2, z + 7.5, "wire tension", color=orn, ha="center", fontsize=9)
@@ -144,7 +153,8 @@ def schematic(name="tensioner_diagram", takeup=0.35):
             color="#0a7d2c", ha="center", va="top", fontsize=8)
     # labels
     for tx, tz, s, ha in [
-        (M.TENS_BACK / 2, H + 2, "back wall\n(carriage mount +\nspring anchor)", "center"),
+        (anchor_x - 2, H + 2, "carriage\nanchor post", "center"),
+        (M.TENS_BACK / 2, -6, "back wall\n(carriage mount)", "center"),
         (x0 + M.TENS_SLED_X / 2, H + 2, "sled", "center"),
         (x0 + M.TENS_SLED_X / 2 + 1, F + M.TENS_SLED_Z + 6, "M3 set screw\n(wire clamp)", "center"),
         (x0 + M.TENS_SLED_X * 0.72, F + M.TENS_SLED_Z + 4.5, "terminal", "left"),
@@ -152,7 +162,7 @@ def schematic(name="tensioner_diagram", takeup=0.35):
     ]:
         ax.text(tx, tz, s, ha=ha, va="bottom", fontsize=8)
 
-    ax.set_xlim(-6, X + 50)
+    ax.set_xlim(anchor_x - 10, X + 52)
     ax.set_ylim(-14, H + 16)
     ax.set_aspect("equal")
     ax.axis("off")
